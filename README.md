@@ -1,5 +1,5 @@
 # s3-admin-backend
-=======
+
 ## Description
 S3 Admin NestJS app to be deployed as an AWS Lambda.
 
