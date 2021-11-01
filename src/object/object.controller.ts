@@ -21,12 +21,12 @@ export class ObjectController {
     file.pipe(res);
   }
 
-  @Post('/:bucket/:key')
+  @Post('/:bucket/')
   @UseInterceptors(FileInterceptor('file'))
-  async upload(@UploadedFile() file,
+  async upload(@UploadedFile() file: any,
     @Param('bucket') bucket: string,
-    @Param('key') key: string
+    @Query('prefix') prefix: string
   ) {
-      return await this.s3Service.uploadObject(bucket, key, file);
+    return await this.s3Service.uploadObject(bucket, `${prefix}/${file.originalname}`, file.buffer);
   }
 }

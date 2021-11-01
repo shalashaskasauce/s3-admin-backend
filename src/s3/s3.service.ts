@@ -24,12 +24,11 @@ export class S3Service {
   }
 
   async getObject(bucket: string, key: string) {
-    console.log('key', key);
     const response = await this._client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
     return response;
   }
 
-  async uploadObject(bucket: string, key: string, body: string) {
+  async uploadObject(bucket: string, key: string, body: any) {
     const input = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
