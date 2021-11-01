@@ -1,22 +1,32 @@
-import { Controller, Get, Param, Res } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Readable } from 'stream';
 
-import { ObjectsService } from 'src/objects/objects.service';
+import { S3Service } from 'src/s3/s3.service';
 
 @Controller('object')
 export class ObjectController {
-  constructor(private objectsService: ObjectsService){
+  constructor(private s3Service: S3Service){
   }
 
-  @Get('/:bucket/:key')
+  @Get('/:bucket/')
   async findOne(
     @Param('bucket') bucket: string,
-    @Param('key') key: string,
+    @Query('key') key: string,
     @Res() res: any) {
-    const response = await this.objectsService.getObject(bucket, key);
+    const response = await this.s3Service.getObject(bucket, key);
     const file = response.Body as Readable;
 
     res.attachment(key);
     file.pipe(res);
+  }
+
+  @Post('/:bucket/:key')
+  @UseInterceptors(FileInterceptor('file'))
+  async upload(@UploadedFile() file,
+    @Param('bucket') bucket: string,
+    @Param('key') key: string
+  ) {
+      return await this.s3Service.uploadObject(bucket, key, file);
   }
 }

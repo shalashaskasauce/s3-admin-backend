@@ -1,13 +1,12 @@
 import { Controller, Get, Param } from '@nestjs/common';
-
-import { ObjectsService } from './objects.service';
+import { S3Service } from 'src/s3/s3.service';
 
 @Controller('objects')
 export class ObjectsController {
-  constructor(private objectsService: ObjectsService) {}
+  constructor(private s3Service: S3Service) {}
 
   @Get('/:bucket')
   async findAll(@Param('bucket') bucket: string) {
-    return await this.objectsService.findAll(bucket);
+    return await this.s3Service.listObjects(bucket);
   }
 }
