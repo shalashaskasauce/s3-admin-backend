@@ -27,7 +27,7 @@ export class S3Service {
     const response = await this._client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
     return response;
   }
-
+  // TODO: find proper interface for File
   async uploadObject(bucket: string, key: string, body: any) {
     const input = new PutObjectCommand({
       Bucket: bucket,
