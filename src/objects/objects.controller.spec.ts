@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { S3Service } from 'src/s3/s3.service';
 import { ObjectsController } from './objects.controller';
 
 describe('ObjectsController', () => {
@@ -7,6 +9,7 @@ describe('ObjectsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ObjectsController],
+      providers: [{ provide: S3Service, useValue: {} }],
     }).compile();
 
     controller = module.get<ObjectsController>(ObjectsController);

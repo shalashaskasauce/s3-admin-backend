@@ -1,5 +1,12 @@
 import { Injectable, UploadedFile } from '@nestjs/common';
-import { S3Client, ListBucketsCommand, ListObjectsV2Command, GetObjectCommand, PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  ListBucketsCommand,
+  ListObjectsV2Command,
+  GetObjectCommand,
+  PutObjectCommand,
+  PutObjectCommandInput,
+} from '@aws-sdk/client-s3';
 
 @Injectable()
 export class S3Service {
@@ -12,30 +19,39 @@ export class S3Service {
   }
 
   async listBuckets() {
-    return (
-      await this._client.send(new ListBucketsCommand({}))
-    ).Buckets;
+    return (await this._client.send(new ListBucketsCommand({}))).Buckets;
   }
 
   async listObjects(bucket: string, prefix = '') {
     return (
-      await this._client.send(new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix }))
+      await this._client.send(
+        new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix }),
+      )
     ).Contents;
   }
 
   async getObject(bucket: string, key: string) {
-    const response = await this._client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    const response = await this._client.send(
+      new GetObjectCommand({ Bucket: bucket, Key: key }),
+    );
     return response;
   }
+
   // TODO: find proper interface for File
-  async uploadObject(bucket: string, key: string, body: any) {
+  async uploadObject(
+    bucket: string,
+    key: string,
+    body: any,
+    contentType?: string,
+  ) {
     const input = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
-      Body: body
+      Body: body,
+      ContentType: contentType,
     });
 
-    const response = await this._client.send(input)
+    const response = await this._client.send(input);
     return response;
   }
 }

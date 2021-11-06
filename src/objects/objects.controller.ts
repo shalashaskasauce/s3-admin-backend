@@ -7,10 +7,7 @@ export class ObjectsController {
   constructor(private s3Service: S3Service) {}
 
   @Get('/:bucket')
-  async findAll(
-    @Param('bucket') bucket: string,
-    @Query('prefix') prefix: string = ''
-  ) {
+  async findAll(@Param('bucket') bucket: string, @Query('prefix') prefix = '') {
     return await this.s3Service.listObjects(bucket, prefix);
   }
 }

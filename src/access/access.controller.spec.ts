@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { S3Service } from 'src/s3/s3.service';
-import { ObjectController } from './object.controller';
+import { AccessController } from './access.controller';
 
-describe('ObjectController', () => {
-  let controller: ObjectController;
+describe('AccessController', () => {
+  let controller: AccessController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ObjectController],
+      controllers: [AccessController],
       providers: [{ provide: S3Service, useValue: {} }],
     }).compile();
 
-    controller = module.get<ObjectController>(ObjectController);
+    controller = module.get<AccessController>(AccessController);
   });
 
   it('should be defined', () => {
