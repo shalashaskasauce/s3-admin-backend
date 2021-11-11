@@ -33,7 +33,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
-    "serverless": "^2.66.0"
+    "serverless": "^2.66.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

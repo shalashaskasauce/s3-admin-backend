@@ -85,7 +85,6 @@ export class AccessController {
       'application/json; charset=utf-8',
     );
 
-    console.log('key', key);
     const response = await this.s3Service.getObject(bucket, key);
     const file = response.Body as Readable;
 
