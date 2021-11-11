@@ -10,11 +10,11 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
-import { FileAccess } from 'src/interfaces/file-access';
-import { FileAccessMap } from 'src/interfaces/file-access-map';
-import { S3Service } from 'src/s3/s3.service';
-import { base64UrlDecode, base64UrlEncode } from 'src/util/base64url';
-import { streamToString } from 'src/util/stream-to-string';
+import { FileAccess } from '../interfaces/file-access';
+import { FileAccessMap } from '../interfaces/file-access-map';
+import { S3Service } from '../s3/s3.service';
+import { base64UrlDecode, base64UrlEncode } from '../util/base64url';
+import { streamToString } from '../util/stream-to-string';
 
 // TODO - implement auth
 
@@ -67,17 +67,18 @@ export class AdminController {
    */
   @Put('/:bucket/')
   async modifyAccessfile(
+    @Res() res: Response,
     @Param('bucket') bucket: string,
     @Body('email') email: string,
     @Body('key') key: string,
     @Body('downloads') downloads?: number,
-    @Body('max_downloads') max_downloads?: number,
+    @Body('max_downloads') max_downloads?: number
   ) {
     const encodedEmail = base64UrlEncode(email);
     const existingFile = await this.loadJSONFile(bucket, encodedEmail);
 
     if (!existingFile || !existingFile[key]) {
-      return { message: 'Expected access file does not exist.' };
+      return res.send({ message: 'Expected access file does not exist.' });
     }
 
     // Number() looks unnecessary, but it prevents stringifying the numbers
@@ -105,7 +106,7 @@ export class AdminController {
     const uploadFileJson = JSON.stringify(uploadFile);
 
     if (uploadFileJson === JSON.stringify(existingFile)) {
-      return { message: 'No changes to access file.' };
+      return res.send({ message: 'No changes to access file.' });
     }
 
     await this.s3Service.uploadObject(
@@ -115,7 +116,8 @@ export class AdminController {
       'application/json; charset=utf-8',
     );
 
-    return { message: 'Modification successful' };
+
+    return res.send({ message: 'Modification successful' });
   }
 
   /**
@@ -123,10 +125,11 @@ export class AdminController {
    */
   @Post('/:bucket/')
   async createAccessfile(
+    @Res() res: Response,
     @Param('bucket') bucket: string,
     @Body('email') email: string,
     @Body('key') key: string,
-    @Body('max_downloads') max_downloads = 1,
+    @Body('max_downloads') max_downloads = 1
   ) {
     const encodedEmail = base64UrlEncode(email);
     // link returned in response
@@ -156,17 +159,25 @@ export class AdminController {
         JSON.stringify(uploadFile),
         'application/json; charset=utf-8',
       );
-      return {
+
+      // TODO: use template if SES allows??
+      this.s3Service.sendEmail(
+        email,
+        `Important: this can only be downloaded ${max_downloads} times. Access link: ${email}.`,
+        'Your product link is available'
+      );
+
+      return res.send({
         link: link,
         message: !existingFile
           ? `Created access file for: "${email}".`
           : `Added key: "${key}" for "${email}".`,
-      };
+      });
     }
 
-    return {
+    return res.send({
       message: `No changes to existing file (${encodedEmail}).`,
       link: link,
-    };
+    });
   }
 }

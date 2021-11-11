@@ -11,6 +11,11 @@ DO NOT create keys/secrets from the root account!
 https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/loading-node-credentials-shared.html
 
 
+## SES Email Setup
+Local - set environment variable SES_SENDER_EMAIL.
+
+SES_SENDER_EMAIL=fake_email@fakedomain.com npm start
+
 ## Installation
 
 ```bash
