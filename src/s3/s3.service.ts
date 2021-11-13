@@ -69,7 +69,7 @@ export class S3Service {
           /* more items */
         ],
         ToAddresses: [
-          "toAddress",
+          toAddress,
         ],
       },
       Message: {
@@ -96,9 +96,14 @@ export class S3Service {
       ],
     };
     try {
-      console.log('email', process.env.SES_SENDER_EMAIL);
+      if (process.env.DEBUG) {
+        console.log('email', process.env.SES_SENDER_EMAIL);
+      }
       return await this._emailClient.send(new SendEmailCommand(params));
     } catch (error) {
+      if (process.env.DEBUG) {
+        console.log('Email error:' , error);
+      }
       return new Error(`Error occured: ${error}`);
     }
   }

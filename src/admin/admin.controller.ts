@@ -6,9 +6,11 @@ import {
   Post,
   Put,
   Query,
+  Req,
   Res,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { WebhookRequestParams } from 'interfaces/webhook-request-params';
 
 import { FileAccess } from '../interfaces/file-access';
 import { FileAccessMap } from '../interfaces/file-access-map';
@@ -125,17 +127,50 @@ export class AdminController {
    */
   @Post('/:bucket/')
   async createAccessfile(
+    @Req() req: Request,
     @Res() res: Response,
     @Param('bucket') bucket: string,
-    @Body('email') email: string,
-    @Body('key') key: string,
+    @Body('email') email: string, // deprecated (testing only)
+    @Body('key') key: string, // deprecated (testing only)
     @Body('max_downloads') max_downloads = 1
   ) {
+    if(process.env.DEBUG) {
+      console.log('req method', req.method);
+      console.log('req params:', JSON.stringify(req.params));
+      console.log('req body', JSON.stringify(req.body));
+    }
+
+    const links = [];
+    // product name _must_ match expected key
+    const webhookParams: WebhookRequestParams = req.body;
+    if (webhookParams.billing) {
+      email = webhookParams.billing.email;
+
+      webhookParams.line_items.forEach(async (item) => {
+        const key = `products/${item.name}`;
+        const link =  await this.generateAccessFile(email, bucket, key, max_downloads);
+        links.push(link);
+      });
+    } else {
+      // test mode only
+      const link = await this.generateAccessFile(email, bucket, key, max_downloads);
+      links.push(link);
+    }
+
+    return res.send({
+      links: links,
+      message: ''
+    });
+  }
+
+  private async generateAccessFile(email, bucket, key, max_downloads){
     const encodedEmail = base64UrlEncode(email);
     // link returned in response
     const link = `/access/${bucket}?key=${base64UrlEncode(
       key,
     )}&e=${encodedEmail}`;
+      console.log('link', link);
+
     const newFile: FileAccessMap = {
       [key]: {
         created_at: this.now,
@@ -161,23 +196,12 @@ export class AdminController {
       );
 
       // TODO: use template if SES allows??
-      this.s3Service.sendEmail(
+      await this.s3Service.sendEmail(
         email,
-        `Important: this can only be downloaded ${max_downloads} times. Access link: ${email}.`,
-        'Your product link is available'
+        `Important: this can only be downloaded ${max_downloads} time(s). ${email}.`,
+        `Your product link for: ${key}`
       );
-
-      return res.send({
-        link: link,
-        message: !existingFile
-          ? `Created access file for: "${email}".`
-          : `Added key: "${key}" for "${email}".`,
-      });
     }
-
-    return res.send({
-      message: `No changes to existing file (${encodedEmail}).`,
-      link: link,
-    });
+    return link;
   }
 }
